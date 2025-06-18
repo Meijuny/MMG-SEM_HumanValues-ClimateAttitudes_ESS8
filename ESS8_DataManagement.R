@@ -119,12 +119,4 @@ ESS8<-ESS8 %>%
 ##Income insecurity:
 ESS8$IncomeInsecure<-ifelse(ESS8$hincfel %in% c(7,8,9),NA, ESS8$hincfel)
 
-##Political Trust:
-ESS8$trstprl<-ifelse(ESS8$trstprl %in% c(77,88,99),NA, ESS8$trstprl)
-ESS8$trstplt<-ifelse(ESS8$trstplt %in% c(77,88,99),NA, ESS8$trstplt)
-ESS8$trstprt<-ifelse(ESS8$trstprt %in% c(77,88,99),NA, ESS8$trstprt)
-#
-#compute the mean scale
-ESS8<-ESS8 %>%
-  mutate(PoliticalTrust=(trstprl+trstplt+trstprt)/3)
 
