@@ -59,15 +59,15 @@ CCPolicySupport~SelfTran+Conser+SelfEnhan
 #
 ##option C: CCPolSupport partial metric with support 2 as marker:
 BasicModel.PMetricCCPolSup.marker2.Selection<-ModelSelection(dat=ESS8,
-                                                             S1 = list(NoOpen.HV.Metric.M2.Marker, CCPolSupport.PMetric.M1.MarkerSup2),
+                                                             S1 = list(NoOpen.HV.Metric.M2.Marker, CCPolSupport.PMetric.M1.MarkerSup2), #the lavaan objects from the measurement model
                                                              S2 = Str_model,
                                                              group = "country",
-                                                             clusters=c(1,8),
+                                                             clusters=c(1,8), ##run from 1-8 clusters
                                                              seed = 100,
                                                              userStart = NULL,
                                                              s1_fit = list(NoOpen.HV.Metric.Fit2.Marker, CCPolSupport.PMetric.Fit1.MarkerSup2),
                                                              max_it = 10000L,
-                                                             nstarts = 50L,
+                                                             nstarts = 50L, #50 random starts
                                                              printing = FALSE,
                                                              partition = "hard",
                                                              endogenous_cov = TRUE,
@@ -78,6 +78,9 @@ BasicModel.PMetricCCPolSup.marker2.Selection<-ModelSelection(dat=ESS8,
                                                              missing="FIML")
 
 View(BasicModel.PMetricCCPolSup.marker2.Selection$Overview)
+
+#set the canvas to have CHull plot on the left and BIC_G plot on the right
+par(mfrow = c(1, 2))
 
 #CHull plot
 hull_indices <- chull(BasicModel.PMetricCCPolSup.marker2.Selection$Overview$nrpar, BasicModel.PMetricCCPolSup.marker2.Selection$Overview$LL)
@@ -91,6 +94,9 @@ plot(BasicModel.PMetricCCPolSup.marker2.Selection$Overview$Clusters, BasicModel.
      pch=4, col="black", main="BIC_G plot",xlab="Number of clusters", ylab="BIC_G")
 lines(BasicModel.PMetricCCPolSup.marker2.Selection$Overview$Clusters, 
       BasicModel.PMetricCCPolSup.marker2.Selection$Overview$BIC_G, col="black", lwd=1)
+
+##set back the canvans to default:
+par(mfrow = c(1, 1))
 
 ##suggest 3 clusters --> however, when comparing the 3-cluster solution and the 4-cluster solution with the below codes,
 #we notice that the 3-cluster solution put the extreme values at both sides together
