@@ -30,6 +30,7 @@ sink("./Sink Output/report1/HV_Config_fit1.txt")
 summary(NoOpen.HV.Config.Fit1, fit.measures=T, standardized=T)
 sink()
 
+#check modification indices
 NoOpen.MI.Config.M1<-modindices(NoOpen.HV.Config.Fit1, minimum.value = 10, sort. = T)
 NoOpen.MI.Config.M1<-NoOpen.MI.Config.M1 %>%
   mutate(parameter=paste(lhs, op, rhs, sep = ""))
@@ -60,6 +61,7 @@ sink("./Sink Output/report1/HV_Config_fit2.txt")
 summary(NoOpen.HV.Config.Fit2, fit.measures=T, standardized=T)
 sink()
 
+#check modification indices
 NoOpen.MI.Config.M2<-modindices(NoOpen.HV.Config.Fit2, minimum.value = 10, sort. = T)
 NoOpen.MI.Config.M2<-NoOpen.MI.Config.M2 %>%
   mutate(parameter=paste(lhs, op, rhs, sep = ""))
@@ -90,6 +92,7 @@ sink("./Sink Output/report1/HV_Config_fit3.txt")
 summary(NoOpen.HV.Config.Fit3, fit.measures=T, standardized=T)
 sink()
 
+#check modification indices
 NoOpen.MI.Config.M3<-modindices(NoOpen.HV.Config.Fit3, minimum.value = 10, sort. = T)
 NoOpen.MI.Config.M3<-NoOpen.MI.Config.M3 %>%
   mutate(parameter=paste(lhs, op, rhs, sep = ""))
@@ -119,6 +122,7 @@ sink("./Sink Output/report1/HV_Config_fit4.txt")
 summary(NoOpen.HV.Config.Fit4, fit.measures=T, standardized=T)
 sink()
 
+#check modification indices
 NoOpen.MI.Config.M4<-modindices(NoOpen.HV.Config.Fit4, minimum.value = 10, sort. = T)
 NoOpen.MI.Config.M4<-NoOpen.MI.Config.M4 %>%
   mutate(parameter=paste(lhs, op, rhs, sep = ""))
@@ -152,6 +156,7 @@ sink("./Sink Output/report1/HV_Config_fit5.txt")
 summary(NoOpen.HV.Config.Fit5, fit.measures=T, standardized=T)
 sink()
 
+#check modification indices
 NoOpen.MI.Config.M5<-modindices(NoOpen.HV.Config.Fit5, minimum.value = 10, sort. = T)
 NoOpen.MI.Config.M5<-NoOpen.MI.Config.M5 %>%
   mutate(parameter=paste(lhs, op, rhs, sep = ""))
@@ -184,6 +189,7 @@ sink("./Sink Output/report1/HV_Config_fit6.txt")
 summary(NoOpen.HV.Config.Fit6, fit.measures=T, standardized=T)
 sink()
 
+#check modification indices
 NoOpen.MI.Config.M6<-modindices(NoOpen.HV.Config.Fit6, minimum.value = 10, sort. = T)
 NoOpen.MI.Config.M6<-NoOpen.MI.Config.M6 %>%
   mutate(parameter=paste(lhs, op, rhs, sep = ""))
@@ -321,65 +327,7 @@ sink()
 
 
 #####################################################################################
-############### Measurement Block 2: Climate Change Belief ###########################
-#####################################################################################
-
-##Configural invariance Model 1: perfect fit since the model is just identified
-CCBelief.Config.M1<-'
-CCBelief=~TrendBelief+AttriBelief+ImpactBelief
-'
-
-CCBelief.Config.Fit1<-cfa(model = CCBelief.Config.M1,
-                          data = ESS8,
-                          group = "country",
-                          estimator="MLR",
-                          missing="FIML",
-                          std.lv=T)
-
-sink("./Sink Output/report1/CCBelief_Config_fit1.txt")
-summary(CCBelief.Config.Fit1, fit.measures=T, standardized=T)
-sink()
-
-##(Full) Metric Model 1: 
-CCBelief.Metric.M1<-'
-CCBelief=~TrendBelief+AttriBelief+ImpactBelief
-'
-
-CCBelief.Metric.Fit1<-cfa(model = CCBelief.Metric.M1,
-                          data = ESS8,
-                          group = "country",
-                          estimator="MLR",
-                          missing="FIML",
-                          group.equal="loadings",
-                          std.lv=T)
-
-sink("./Sink Output/report1/CCBelief_Metric_fit1.txt")
-summary(CCBelief.Metric.Fit1, fit.measures=T, standardized=T)
-sink()
-
-
-#Full metric model is good
-##we switch to marker variable approach to set the scale of the factor for MMG-SEM step 2
-##(Full) Metric Model 1: 
-CCBelief.Metric.M1.Marker<-'
-CCBelief=~ImpactBelief+TrendBelief+AttriBelief
-'
-
-CCBelief.Metric.Fit1.Marker<-cfa(model = CCBelief.Metric.M1.Marker,
-                                 data = ESS8,
-                                 group = "country",
-                                 estimator="MLR",
-                                 missing="FIML",
-                                 group.equal="loadings")
-
-
-sink("./Sink Output/report1/Marker_CCBelief_Metric_fit1.txt")
-summary(CCBelief.Metric.Fit1.Marker, fit.measures=T, standardized=T)
-sink()
-
-
-#####################################################################################
-############# Measurement block 3: Climate Change Policy Support #####################
+################# Measurement block 2: Climate Policy Support #######################
 #####################################################################################
 
 
@@ -509,4 +457,62 @@ CCPolSupport.Metric.Fit2.Marker.WideBound<-cfa(model = CCPolSupport.Metric.M2.Ma
 
 sink("./Sink Output/report1/CCPolicySupport_Metric_fit2_marker_wideBound.txt")
 summary(CCPolSupport.Metric.Fit2.Marker.WideBound, fit.measures=T, standardized=T)
+sink()
+
+
+#####################################################################################
+############### Measurement Block 3: Climate Change Belief ###########################
+#####################################################################################
+
+##Configural invariance Model 1: perfect fit since the model is just identified
+CCBelief.Config.M1<-'
+CCBelief=~TrendBelief+AttriBelief+ImpactBelief
+'
+
+CCBelief.Config.Fit1<-cfa(model = CCBelief.Config.M1,
+                          data = ESS8,
+                          group = "country",
+                          estimator="MLR",
+                          missing="FIML",
+                          std.lv=T)
+
+sink("./Sink Output/report1/CCBelief_Config_fit1.txt")
+summary(CCBelief.Config.Fit1, fit.measures=T, standardized=T)
+sink()
+
+##(Full) Metric Model 1: 
+CCBelief.Metric.M1<-'
+CCBelief=~TrendBelief+AttriBelief+ImpactBelief
+'
+
+CCBelief.Metric.Fit1<-cfa(model = CCBelief.Metric.M1,
+                          data = ESS8,
+                          group = "country",
+                          estimator="MLR",
+                          missing="FIML",
+                          group.equal="loadings",
+                          std.lv=T)
+
+sink("./Sink Output/report1/CCBelief_Metric_fit1.txt")
+summary(CCBelief.Metric.Fit1, fit.measures=T, standardized=T)
+sink()
+
+
+#Full metric model is good
+##we switch to marker variable approach to set the scale of the factor for MMG-SEM step 2
+##(Full) Metric Model 1: 
+CCBelief.Metric.M1.Marker<-'
+CCBelief=~ImpactBelief+TrendBelief+AttriBelief
+'
+
+CCBelief.Metric.Fit1.Marker<-cfa(model = CCBelief.Metric.M1.Marker,
+                                 data = ESS8,
+                                 group = "country",
+                                 estimator="MLR",
+                                 missing="FIML",
+                                 group.equal="loadings")
+
+
+sink("./Sink Output/report1/Marker_CCBelief_Metric_fit1.txt")
+summary(CCBelief.Metric.Fit1.Marker, fit.measures=T, standardized=T)
 sink()
