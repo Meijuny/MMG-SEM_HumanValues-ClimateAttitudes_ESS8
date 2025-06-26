@@ -34,7 +34,7 @@ NoOpen.HV.Metric.Fit2.Marker<-cfa(model = NoOpen.HV.Metric.M2.Marker,
                                   group.partial=c("SelfEnhan=~SE3"))
 
 ##climate change policy support
-##Option C: partial metric invariance model with support 2 as marker and let support 3 freely estimated (wide bound estimation for convergence)
+##partial metric invariance model with support 2 as marker and let support 3 freely estimated (wide bound estimation for convergence)
 CCPolSupport.PMetric.M1.MarkerSup2<-'
 CCPolicySupport=~support2+support1+support3
 '
