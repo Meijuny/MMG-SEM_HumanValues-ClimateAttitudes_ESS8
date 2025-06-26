@@ -108,9 +108,11 @@ CCPolSupport_4clus_3D_PMMark2<-plot_ly(FreeSAM_reg_param, x= ~SelfTran, y= ~Cons
                                        colors = cluster_colors,
                                        type = "scatter3d", mode="markers+text") %>%
   layout(title="SAM 4 clusters - Human Values on Climate Policy Support",
-         scene=list(xaxis=list(title="Self-Transcendence"),
-                    yaxis=list(title="Conservation"),
-                    zaxis=list(title="Self-Enhancement")))
+         scene = list(
+           xaxis = list(title = list(text = "Self-Transcendence", font = list(size = 18))),
+           yaxis = list(title = list(text = "Conservation", font = list(size = 18))),
+           zaxis = list(title = list(text = "Self-Enhancement", font = list(size = 18)))
+         ))
 
 
 htmlwidgets::saveWidget(CCPolSupport_4clus_3D_PMMark2, "BasicModel3D.html", selfcontained = T)
