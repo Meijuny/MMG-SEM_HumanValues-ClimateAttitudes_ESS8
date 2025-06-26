@@ -7,6 +7,7 @@ library(forcats)
 library(htmltools)
 library(maps)
 library(mmgsem)
+library(patchwork)
 
 #########################################################################################
 ####################### geographical patterns ###########################################
@@ -108,7 +109,11 @@ ggplot(map_with_4clusters.PM, aes(long, lat, group = group, fill = ClusterChar))
   labs(
     fill = "Cluster & Characteristics"
   ) +
-  theme_minimal()
+  theme_minimal()+
+  theme(
+    legend.title = element_text(size = 14),   # legend title font size
+    legend.text = element_text(size = 12)     # legend item labels font size
+  )
 
 
 ######################################################################################
@@ -171,7 +176,7 @@ cluster_colors <- c("1" = "#66C2A5",  # Soft Blue
                     "3" = "#8DA0CB",  # Mint Green
                     "4" = "#E78AC3")
 
-ggplot(GDPPerCapita_4clusters, aes(x=factor(ClusMembership), y=X2016, fill=factor(ClusMembership)))+
+GDPboxplot<-ggplot(GDPPerCapita_4clusters, aes(x=factor(ClusMembership), y=X2016, fill=factor(ClusMembership)))+
   geom_boxplot()+
   scale_fill_manual(values = cluster_colors)+
   xlab("cluster")+ylab("GDP per Capita of 2016")+
@@ -227,9 +232,13 @@ cluster_colors <- c("2" = "#FC8D62",  # Warm Coral
                     "3" = "#8DA0CB",  # Mint Green
                     "4" = "#E78AC3")
 
-ggplot(data = ESPI_clus, aes(x=factor(ClusMembership), y=OBS_VALUE, fill=factor(ClusMembership)))+
+EPI<-ggplot(data = ESPI_clus, aes(x=factor(ClusMembership), y=OBS_VALUE, fill=factor(ClusMembership)))+
   geom_boxplot()+
   xlab("Cluster")+ylab("Environmental Policy Stringency Index")+
   scale_fill_manual(values = cluster_colors)+
   labs(fill="cluster", title = "Environmental Policy Stringency Index by Clusters")+
   theme_bw()
+
+
+##GDP plot and EPI plot together:
+GDPboxplot + EPI
