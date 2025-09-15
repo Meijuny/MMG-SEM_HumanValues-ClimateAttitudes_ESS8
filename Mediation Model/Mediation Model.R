@@ -11,8 +11,7 @@ library(mmgsem)
 ##use the same data ESS8 (data preparation step see 'Step-by-step Tutorial' --> Step 0 - Data Preparation.R)
 
 ####------------------------------------------------------------------------
-#Re-run the three measurement blocks needed for the mediation model
-##First, run all the necessary measurement models with marker variable approach:
+#First re-run the three measurement blocks that was estimated with all 23 countries with the marker variable approach
 #
 ##Human Values
 #
@@ -61,60 +60,58 @@ CCBelief.Metric.Fit1.Marker<-cfa(model = CCBelief.Metric.M1.Marker,
                                  group.equal="loadings")
 
 
-####------------------------------------------------------------------------
-#Model selection
-##specify the structural model:
+###-----------------------------------------------------------------------------------------------------------------
+##Model selection:
 Str_model<-'
 CCBelief~SelfTran+Conser+SelfEnhan
 
 CCPolicySupport~CCBelief+SelfTran+Conser+SelfEnhan
 '
 
-MediationModel.Selection.PM.MarkSup2<-ModelSelection(dat=ESS8,
-                                                     S1 = list(NoOpen.HV.Metric.M2.Marker, CCBelief.Metric.M1.Marker,CCPolSupport.PMetric.M1.MarkerSup2),
-                                                     S2 = Str_model,
-                                                     group = "country",
-                                                     clusters=c(1,8),
-                                                     seed = 100,
-                                                     userStart = NULL,
-                                                     s1_fit = list(NoOpen.HV.Metric.Fit2.Marker, CCBelief.Metric.Fit1.Marker,CCPolSupport.PMetric.Fit1.MarkerSup2),
-                                                     max_it = 10000L,
-                                                     nstarts = 300L,
-                                                     printing = FALSE,
-                                                     partition = "hard",
-                                                     endogenous_cov = TRUE,
-                                                     endo_group_specific = TRUE,
-                                                     sam_method = "local",
-                                                     meanstr = FALSE,
-                                                     rescaling = F,
-                                                     missing="FIML")
-View(MediationModel.Selection.PM.MarkSup2$Overview)
+Mediation.ModelSelection<-ModelSelection(dat=ESS8,
+                                         S1 = list(NoOpen.HV.Metric.M2.Marker, CCBelief.Metric.M1.Marker,CCPolSupport.PMetric.M1.MarkerSup2),
+                                         S2 = Str_model,
+                                         s1_type = "lavaan",
+                                         group = "country",
+                                         nclus=c(1,8),
+                                         seed = 100,
+                                         userStart = NULL,
+                                         s1_fit = list(NoOpen.HV.Metric.Fit2.Marker, CCBelief.Metric.Fit1.Marker,CCPolSupport.PMetric.Fit1.MarkerSup2),
+                                         max_it = 10000L,
+                                         nstarts = 500L,
+                                         printing = F,
+                                         partition = "hard",
+                                         endogenous_cov = TRUE,
+                                         endo_group_specific = TRUE,
+                                         sam_method = "local",
+                                         meanstr = FALSE,
+                                         rescaling = F,
+                                         missing="FIML")
+View(Mediation.ModelSelection$Overview)
 
-##set up the cavans for CHull plot to be at the left and BIC_G plot to be at the right:
-par(mfrow = c(2, 1))
+
+#set the canvas to have CHull plot on the left and BIC_G plot on the right
+par(mfrow = c(1, 2))
 
 #CHull plot
-hull_indices <- chull(MediationModel.Selection.PM.MarkSup2$Overview$nrpar, MediationModel.Selection.PM.MarkSup2$Overview$LL)
-plot(MediationModel.Selection.PM.MarkSup2$Overview$nrpar, MediationModel.Selection.PM.MarkSup2$Overview$LL, 
-     pch=4, col="black", main="CHull plot",xlab="Number of free parameters", ylab="Loglikelihood")
-lines(MediationModel.Selection.PM.MarkSup2$Overview$nrpar[hull_indices], 
-      MediationModel.Selection.PM.MarkSup2$Overview$LL[hull_indices], col="black", lwd=1)
-points(MediationModel.Selection.PM.MarkSup2$Overview$nrpar[hull_indices], MediationModel.Selection.PM.MarkSup2$Overview$LL[hull_indices], pch=16, col="black")
+hull_indices <- chull(Mediation.ModelSelection$Overview$nrpar, Mediation.ModelSelection$Overview$LL)
+plot(Mediation.ModelSelection$Overview$nrpar, Mediation.ModelSelection$Overview$LL, 
+     pch=4, col="black", main="CHull Scree Plot",xlab="Number of free parameters", ylab="Loglikelihood")
+lines(Mediation.ModelSelection$Overview$nrpar[hull_indices], 
+      Mediation.ModelSelection$Overview$LL[hull_indices], col="black", lwd=1)
 
-##BIC_G:
-plot(MediationModel.Selection.PM.MarkSup2$Overview$Clusters, MediationModel.Selection.PM.MarkSup2$Overview$BIC_G, 
-     pch=4, col="black", main="BIC_G plot",xlab="Number of clusters", ylab="BIC_G")
-lines(MediationModel.Selection.PM.MarkSup2$Overview$Clusters, 
-      MediationModel.Selection.PM.MarkSup2$Overview$BIC_G, col="black", lwd=1)
+##BIC_G plot:
+plot(Mediation.ModelSelection$Overview$Clusters, Mediation.ModelSelection$Overview$BIC_G, 
+     pch=4, col="black", main="BIC_G Plot",xlab="Number of clusters", ylab="BIC_G")
+lines(Mediation.ModelSelection$Overview$Clusters, 
+      Mediation.ModelSelection$Overview$BIC_G, col="black", lwd=1)
 
-##reset the canvas back to default:
+##set back the canvans to default:
 par(mfrow = c(1, 1))
 
-##select 2 and 6 clusters
 
-####----------------------------------------------------------------------------------------------------
-##MMGSEM for the 2 full metric CCPolSupport options:
-
+##MMG-SEM 6 clusters:
+##300 starts was sufficient to reach a stable solution for 6 clusters --> use 300 random starts below
 ##specify structural model
 Str_model<-'
 CCBelief~SelfTran+Conser+SelfEnhan
@@ -122,16 +119,18 @@ CCBelief~SelfTran+Conser+SelfEnhan
 CCPolicySupport~CCBelief+SelfTran+Conser+SelfEnhan
 '
 
-Mediation.2clus.PM.MarkSup2<-MMGSEM(dat=ESS8,
+##6 clusters:
+Mediation.6clus.PM.MarkSup2<-mmgsem(dat=ESS8,
                                     S1 = list(NoOpen.HV.Metric.M2.Marker, CCBelief.Metric.M1.Marker,CCPolSupport.PMetric.M1.MarkerSup2),
                                     S2 = Str_model,
+                                    s1_type = "lavaan",
                                     group = "country",
-                                    nclus=2,
+                                    nclus=6,
                                     seed = 100,
                                     userStart = NULL,
                                     s1_fit = list(NoOpen.HV.Metric.Fit2.Marker, CCBelief.Metric.Fit1.Marker,CCPolSupport.PMetric.Fit1.MarkerSup2),
                                     max_it = 10000L,
-                                    nstarts = 50L,
+                                    nstarts = 300L,
                                     printing = F,
                                     partition = "hard",
                                     endogenous_cov = TRUE,
@@ -141,67 +140,67 @@ Mediation.2clus.PM.MarkSup2<-MMGSEM(dat=ESS8,
                                     rescaling = F,
                                     missing="FIML")
 
-##inspect the posterior membership probability:
-round(Mediation.2clus.PM.MarkSup2$posteriors[,1:2], digits = 5)
+##check the posterior membership probabilities:
+Mediation.6clus.PM.MarkSup2$posteriors
 
-##inspect the regression coefficients of each cluster:
-Mediation.2clus.PM.MarkSup2$param$beta_ks
+##check the regression coefficients of each cluster:
+Mediation.6clus.PM.MarkSup2$param$beta_ks
+
+##hypothesis testing to see if effects differ from 0:
+StartTime<-Sys.time()
+se.Mediation.6clus<-se(object = Mediation.6clus.PM.MarkSup2,
+                        d = 0.0001)
+EndTime<-Sys.time()
+StartTime-EndTime
+
+##naive 16 mins: too many NaNs
+##for d=0.00001: 6.710037 hours --> no NaNs produced
+save(se.Mediation.6clus,
+     file = "C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/se.Mediation.d0.00001.RData")
+sink("C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/summary_se_Mediation_d0.00001.txt")
+summary(model=Mediation.6clus.PM.MarkSup2,se=se.Mediation.6clus)
+sink()
+sink("C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/BG_Mediation_d0.00001.txt")
+test.mmgsem(model = Mediation.6clus.PM.MarkSup2,
+            se = se.Mediation.6clus,
+            multiple_comparison = T)
+sink()
+
+##for d=0.0001: 7.59 hours --> no NaNs produced
+save(se.Mediation.6clus,
+     file = "C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/se.Mediation.d0.0001.RData")
+sink("C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/summary_se_Mediation_d0.0001.txt")
+summary(model=Mediation.6clus.PM.MarkSup2,se=se.Mediation.6clus)
+sink()
+sink("C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/BG_Mediation_d0.0001.txt")
+test.mmgsem(model = Mediation.6clus.PM.MarkSup2,
+            se = se.Mediation.6clus,
+            multiple_comparison = T)
+sink()
+
+##Cluster Membership in a concise df to make validation plot in the next step:
+clustering.Mediation.6clus<-Mediation.6clus.PM.MarkSup2$posteriors
+clustering.Mediation.6clus[,2:7]<-t(apply(clustering.Mediation.6clus[,2:7],1,function(x) as.numeric(x==max(x))))
+clustering.Mediation.6clus[,3]<-ifelse(clustering.Mediation.6clus[,3]==1,2,0)
+clustering.Mediation.6clus[,4]<-ifelse(clustering.Mediation.6clus[,4]==1,3,0)
+clustering.Mediation.6clus[,5]<-ifelse(clustering.Mediation.6clus[,5]==1,4,0)
+clustering.Mediation.6clus[,6]<-ifelse(clustering.Mediation.6clus[,6]==1,5,0)
+clustering.Mediation.6clus[,7]<-ifelse(clustering.Mediation.6clus[,7]==1,6,0)
+
+ClusterRes.Mediation.6clus<-clustering.Mediation.6clus %>%
+  mutate(ClusMembership=`Cluster 1`+`Cluster 2`+`Cluster 3`+`Cluster 4`+`Cluster 5`+`Cluster 6`) %>%
+  select(Group, ClusMembership) %>%
+  rename(country=Group) %>%
+  mutate(group=row_number())
 
 
-##cluster membership:
-clustering.2clus<-t(apply(Mediation.2clus.PM.MarkSup2$posteriors[,1:2],1,function(x) as.numeric(x==max(x))))
-clustering.2clus[,2]<-ifelse(clustering.2clus[,2]==1,2,0)
-ClusMembership.2clus<-apply(clustering.2clus,1,function(x) sum(x))
-ClusterRes.2clus<-data.frame(group=c(1:23),
-                             ClusMembership=ClusMembership.2clus)
-countries<-data.frame(group=c(1:23),
-                      country=lavInspect(NoOpen.HV.Metric.Fit2.Marker, "group.label"))
 
-ClusterRes.2clus<-merge(ClusterRes.2clus, countries,
-                        by.x = "group", by.y = "group")
+###############################################################################
+##################### Mediation - Validation ##################################
+###############################################################################
 
-
-####----------------------------------------------------------------------------------------------------
-##Validation for 2 clusters:
-#
-##extract the loadings and residual variances from HV 
-EST_HV<-lavInspect(NoOpen.HV.Metric.Fit2.Marker, what = "est")
-lambda_HV_23cntry<-lapply(EST_HV, "[[", "lambda")
-theta_HV_23cntry<-lapply(EST_HV, "[[", "theta")
-#
-##extract the loadings and residual variances from CCBelief
-EST_CCBelief<-lavInspect(CCBelief.Metric.Fit1.Marker, what = "est")
-lambda_CCBelief_23cntry<-lapply(EST_CCBelief, "[[","lambda")
-theta_CCBelief_23cntry<-lapply(EST_CCBelief, "[[","theta")
-#
-##extract the loadings and residual variances from CCPolSupport
-EST_CCPolSupport<-lavInspect(CCPolSupport.PMetric.Fit1.MarkerSup2, what = "est")
-lambda_CCPolSupport_23cntry<-lapply(EST_CCPolSupport, "[[","lambda")
-theta_CCPolSupport_23cntry<-lapply(EST_CCPolSupport, "[[","theta")
-#
-##initialize empty list to store the new lambda matrix, new theta matrix and the mapping matrix
-lambda_23cntry<-vector(mode = "list", length=length(unique(ESS8$country)))
-theta_23cntry<-vector(mode = "list", length=length(unique(ESS8$country)))
-Mmatrix<-vector(mode = "list", length = length(unique(ESS8$country)))
-
-for (g in 1:length(unique(ESS8$country))){
-  ##put lambda from two measurement blocks into into the same matrix for each group
-  lambda_23cntry[[g]]<-lav_matrix_bdiag(lambda_HV_23cntry[[g]], lambda_CCBelief_23cntry[[g]], lambda_CCPolSupport_23cntry[[g]])
-  colnames(lambda_23cntry[[g]])<-c(colnames(lambda_HV_23cntry[[g]]),colnames(lambda_CCBelief_23cntry[[g]]), colnames(lambda_CCPolSupport_23cntry[[g]]))
-  rownames(lambda_23cntry[[g]])<-c(rownames(lambda_HV_23cntry[[g]]),rownames(lambda_CCBelief_23cntry[[g]]), rownames(lambda_CCPolSupport_23cntry[[g]]))
-  
-  ##put theta from two measurement blocks into the same matrix for each group
-  theta_23cntry[[g]]<-lav_matrix_bdiag(theta_HV_23cntry[[g]],theta_CCBelief_23cntry[[g]],theta_CCPolSupport_23cntry[[g]])
-  colnames(theta_23cntry[[g]])<-c(colnames(theta_HV_23cntry[[g]]),colnames(theta_CCBelief_23cntry[[g]]), colnames(theta_CCPolSupport_23cntry[[g]]))
-  rownames(theta_23cntry[[g]])<-c(rownames(theta_HV_23cntry[[g]]),rownames(theta_CCBelief_23cntry[[g]]), rownames(theta_CCPolSupport_23cntry[[g]]))
-  
-  ##compute the mapping matrix for each group
-  Mmatrix[[g]]<-solve(t(lambda_23cntry[[g]]) %*% solve(theta_23cntry[[g]]) %*% lambda_23cntry[[g]]) %*% t(lambda_23cntry[[g]]) %*% solve(theta_23cntry[[g]])
-}
-
-#
-##run an empty sem to just extract the imputed sample covariance matrix
-fake_model<-'
+Mediation_lavaanFREEsam_str_model_PM_MarkSup2<-'
+##measurement model:
 SelfTran=~ST4+ST1+ST2+ST3+ST5+SE3+C3+C4
 Conser=~C2+C1+C3+C4+C5+C6+SE4
 SelfEnhan=~SE2+SE1+SE3+SE4+C1
@@ -209,35 +208,12 @@ SelfEnhan=~SE2+SE1+SE3+SE4+C1
 ##Add Error Term Correlation
 C5~~C6
 
+CCPolicySupport=~support2+support1+support3
+
 CCBelief=~ImpactBelief+TrendBelief+AttriBelief
 
-CCPolicySupport=~support3+support1+support2
-'
+##structural model:
 
-fake<-cfa(model = fake_model,
-          data = ESS8,
-          group = "country",
-          estimator="MLR",
-          missing="FIML",
-          do.fit=F)
-
-S<-fake@SampleStats@cov
-
-S<-lapply(S, function(x) {
-  colnames(x)<-rownames(x)<-colnames(fitted(fake)[[1]]$cov)
-  x
-})
-
-#
-##compute the factor covariance matrix for each group that will be used for the second step:
-Var_eta<-vector(mode = "list", length = length(unique(ESS8$country)))
-
-for (g in 1:length(unique(ESS8$country))) {
-  Var_eta[[g]]<-Mmatrix[[g]] %*% (S[[g]]-theta_23cntry[[g]]) %*% t(Mmatrix[[g]])
-}
-
-##In order to map the cluster solution, we also need to do a free SAM for all sorts of clustering solution:
-Mediation_FREEsam_str_model_PM_MarkSup2<-'
 CCBelief~c(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23)*SelfTran+
           c(b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11,b12,b13,b14,b15,b16,b17,b18,b19,b20,b21,b22,b23)*Conser+
           c(c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23)*SelfEnhan
@@ -317,287 +293,223 @@ SEindirect_g22:=c22*d22
 SEindirect_g23:=c23*d23
 '
 
-Mediation.FreeSAM.PM.MarkSup2<-cfa(model = Mediation_FREEsam_str_model_PM_MarkSup2,
-                                   sample.cov = Var_eta,
-                                   sample.nobs = lavInspect(fake, "nobs"))
 
+Mediation.lavaanFreeSAM.fit<-sam(model = Mediation_lavaanFREEsam_str_model_PM_MarkSup2,
+                                 data = ESS8, 
+                                 mm.list = list(c("SelfTran","Conser","SelfEnhan"), "CCBelief","CCPolicySupport"), ##to separate the measurement block
+                                 cmd = "sem",
+                                 group="country",
+                                 group.equal="loadings",
+                                 group.partial=c("SelfEnhan=~SE3","CCPolicySupport=~support3"),
+                                 sam.method = "local", ##local SEM where we use factor covariance matrix from step 1 to estimate the structural model in step 2
+                                 missing="FIML",  #handle missing values
+                                 )
 
-
-##Plotting the 2-cluster solution for validations:
+####------------------------------------------------------------------------------
+##Visualize the separation between sub-cluster 3.1 and sub-cluster 3.2
 #
-#climate change belief to climate policy support
-FreeSAMparam<-parameterEstimates(Mediation.FreeSAM.PM.MarkSup2)
+##subset the Cluster 3 countries 
+#(sub-cluster 3.1 corresponds to cluster 3 in the current mediation result)
+#(sub-cluster 3.2 corresponds to cluster 2 in the current mediation result)
+ClusterRes.Cluster3Countries<-ClusterRes.Mediation.6clus %>%
+  filter((ClusMembership==3)|(ClusMembership==2)) %>%
+  mutate(ClusMembership=case_when(
+    ClusMembership == 3 ~ "3.1",
+    ClusMembership == 2 ~ "3.2"
+  ))
 
-CCBelief_regPar<-FreeSAMparam %>%
+#climate change belief to climate policy support
+Mediation.FreeSAMparam<-parameterEstimates(Mediation.lavaanFreeSAM.fit)
+
+Mediation.CCBelief_regPar<-Mediation.FreeSAMparam %>%
   filter(op=="~" & lhs=="CCPolicySupport" & rhs=="CCBelief") %>%
   select(lhs, rhs, group, est, ci.lower, ci.upper)
 
-CCBelief_regPar<-merge(CCBelief_regPar, ClusterRes.2clus, 
-                       by.x = "group", by.y = "group")
+Cluster3Country.CCBelief_regPar<-merge(Mediation.CCBelief_regPar, ClusterRes.Cluster3Countries, 
+                                       by.x = "group", by.y = "group")
 
-CCBelief_regPar$country <- fct_reorder(CCBelief_regPar$country, 
-                                       CCBelief_regPar$ClusMembership)
+Cluster3Country.CCBelief_regPar$country <- fct_reorder(Cluster3Country.CCBelief_regPar$country, 
+                                                       Cluster3Country.CCBelief_regPar$ClusMembership)
 
-cluster_colors <- c("1" = "#66C2A5",  # Soft Blue
-                    "2" = "#FC8D62")
+cluster_colors <- c("3.1" = "#5E3C99",
+                    "3.2" = "#7FA6D6")
 
-ggplot(CCBelief_regPar, aes(x=est, y=country, color=factor(ClusMembership)))+
+ggplot(Cluster3Country.CCBelief_regPar, aes(x=est, y=country, color=factor(ClusMembership)))+
   geom_point(size=3) +
   geom_errorbarh(aes(xmin = ci.lower, xmax = ci.upper), height=0.2)+
-  geom_vline(xintercept = 0.375, color="red", linetype="dashed")+
+  geom_vline(xintercept = 0.435, color="red", linetype="dashed")+
   scale_color_manual(values = cluster_colors)+
-  labs(title = "Effect of Climate Change Belief on Climate Policy Support",
-       color="cluster")+
+  labs(title = "Effect of Climate Change Belief on Climate Policy Support for Cluster-3 Countries",
+       color="sub-cluster")+
   xlab("regression coefficients")+ylab("country")+
   theme_bw()
+
+#
 #
 #3D plot: direct effect of HV on climate policy support
-FreeSAMparam<-parameterEstimates(Mediation.FreeSAM.PM.MarkSup2)
+Mediation.FreeSAMparam<-parameterEstimates(Mediation.lavaanFreeSAM.fit)
 
-HVDirect.param<-FreeSAMparam %>%
+HVDirect.param.Mediation<-Mediation.FreeSAMparam %>%
   filter(op=="~" & lhs=="CCPolicySupport" & rhs!="CCBelief") %>%
   select(lhs, rhs, group, est, ci.lower, ci.upper)
 
-HVDirect.param.wide<-HVDirect.param %>%
+HVDirect.param.Mediation.wide<-HVDirect.param.Mediation %>%
   select(rhs, group, est) %>%
   pivot_wider(names_from = rhs, values_from = est)
 
-HVDirect.param.wide<-merge(HVDirect.param.wide, ClusterRes.2clus, 
-                           by.x = "group", by.y = "group")
+HVDirect.param.wide.Cluster3Countries<-merge(HVDirect.param.Mediation.wide, ClusterRes.Cluster3Countries, 
+                                             by.x = "group", by.y = "group")
 
-cluster_colors <- c("1" = "#66C2A5",  # Soft Blue
-                    "2" = "#FC8D62")
+cluster_colors <- c("3.1" = "#5E3C99",
+                    "3.2" = "#7FA6D6")
 
-Mediation_2clus_direct_3D<-plot_ly(HVDirect.param.wide, x= ~SelfTran, y= ~Conser, z= ~SelfEnhan, text= ~country, color = ~factor(ClusMembership),
-                                   colors = cluster_colors,
-                                   type = "scatter3d", mode="markers+text") %>%
-  layout(title="SAM Mediation Model - 2 clusters - direct effect of human values",
+Mediation_Cluster3Countries_direct_3D<-plot_ly(HVDirect.param.wide.Cluster3Countries, x= ~SelfTran, y= ~Conser, z= ~SelfEnhan, text= ~country, color = ~factor(ClusMembership),
+                                               colors = cluster_colors,
+                                               type = "scatter3d", mode="markers+text") %>%
+  layout(title="SAM Mediation Model - Cluster-3 Countries - direct effect of human values",
          scene=list(xaxis=list(title="Self-Transcendence"),
                     yaxis=list(title="Conservation"),
                     zaxis=list(title="Self-Enhancement")))
 
-htmlwidgets::saveWidget(as_widget(Mediation_2clus_direct_3D), "Mediation_2clus_directHV_3D.html")
+htmlwidgets::saveWidget(as_widget(Mediation_Cluster3Countries_direct_3D), 
+                        file = "C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/Mediation_Cluster3Countries_directHV_3D.html")
 
 #
 ###3D plot for indirect effects of human values on climate policy support via climate change belief:
-FreeSAMparam<-parameterEstimates(Mediation.FreeSAM.PM.MarkSup2)
+Mediation.FreeSAMparam<-parameterEstimates(Mediation.lavaanFreeSAM.fit)
 
-HVIndirect.par<-FreeSAMparam %>%
+HVIndirect.par.Mediation<-Mediation.FreeSAMparam %>%
   filter(op==":=")
 
-HVIndirect.par$group <- as.numeric(gsub(".*_g(\\d+).*", "\\1", HVIndirect.par$lhs))
+HVIndirect.par.Mediation$group <- as.numeric(gsub(".*_g(\\d+).*", "\\1", HVIndirect.par.Mediation$lhs))
 
-HVIndirect.par<-HVIndirect.par %>%
+HVIndirect.par.Mediation<-HVIndirect.par.Mediation %>%
   select(lhs, group, est, ci.lower, ci.upper)
 
-HVIndirect.par$human_values <- gsub("_g.*", "", HVIndirect.par$lhs)
+HVIndirect.par.Mediation$human_values <- gsub("_g.*", "", HVIndirect.par.Mediation$lhs)
 
-HVIndirect.par.wide<-HVIndirect.par %>%
+HVIndirect.par.wide.Mediation<-HVIndirect.par.Mediation %>%
   select(human_values, group, est) %>%
   pivot_wider(names_from = human_values, values_from = est)
 
-HVIndirect.par.wide<-merge(HVIndirect.par.wide, ClusterRes.2clus, 
-                           by.x = "group", by.y = "group")
+HVIndirect.par.wide.Cluster3Countries<-merge(HVIndirect.par.wide.Mediation, ClusterRes.Cluster3Countries, 
+                                             by.x = "group", by.y = "group")
 
-cluster_colors <- c("1" = "#66C2A5",  # Soft Blue
-                    "2" = "#FC8D62")
+cluster_colors <- c("3.1" = "#5E3C99",
+                    "3.2" = "#7FA6D6")
 
-Mediation_2clus_indirect_3D<-plot_ly(HVIndirect.par.wide, x= ~STindirect, y= ~ConIndirect, z= ~SEindirect, text= ~country, color = ~factor(ClusMembership),
-                                     colors = cluster_colors,
-                                     type = "scatter3d", mode="markers+text") %>%
-  layout(title="SAM Mediation Model - 2 clusters - indirect effect of human values via climate change belief",
+Mediation_Cluster3Countries_indirect_3D<-plot_ly(HVIndirect.par.wide.Cluster3Countries, x= ~STindirect, y= ~ConIndirect, z= ~SEindirect, text= ~country, color = ~factor(ClusMembership),
+                                                 colors = cluster_colors,
+                                                 type = "scatter3d", mode="markers+text") %>%
+  layout(title="SAM Mediation Model - Cluster-3 Countries - indirect effect of human values via climate change belief",
          scene=list(xaxis=list(title="Self-Transcendence"),
                     yaxis=list(title="Conservation"),
                     zaxis=list(title="Self-Enhancement")))
 
-htmlwidgets::saveWidget(as_widget(Mediation_2clus_indirect_3D), "Mediation_2clus_indirectHV_3D.html")
+htmlwidgets::saveWidget(as_widget(Mediation_Cluster3Countries_indirect_3D), 
+                        file = "C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/Mediation_Cluster3Countries_indirectHV_3D.html")
 
 
-
-####---------------------------------------------------------------------------------------
-##geographical pattern:
-##take out the world map
-world_map<-map_data("world")
-
-##filter to be a eu map:
-eu_countries <- c(
-  "Austria", "Belgium", "Bulgaria", "Croatia", "Cyprus", "Czech Republic", 
-  "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", 
-  "Ireland", "Iceland", "Italy", "Latvia", "Lithuania", "Luxembourg", "Malta", 
-  "Netherlands", "Norway", "Poland", "Portugal", "Romania", "Russia",
-  "Slovakia", "Slovenia", "Switzerland",
-  "Spain", "Sweden", "UK", "Israel",
-  "Turkey", "Lebanon", "Jordan", "Egypt", "Syria",
-  "Ukraine", "Belarus", "Georgia", "Armenia", "Azerbaijan", "Moldova"
-)
-
-eu_map <- world_map %>%
-  filter(region %in% eu_countries)
-
-##add a new column called region to match the country names with the world map data country names
-ClusterRes.2clus<-ClusterRes.2clus %>%
-  mutate(region=case_when(
-    country == "AT" ~ "Austria",
-    country == "BE" ~ "Belgium",
-    country == "CH" ~ "Switzerland",
-    country == "CZ" ~ "Czech Republic",
-    country == "DE" ~ "Germany",
-    country == "EE" ~ "Estonia",
-    country == "ES" ~ "Spain",
-    country == "FI" ~ "Finland",
-    country == "FR" ~ "France",
-    country == "GB" ~ "UK",
-    country == "HU" ~ "Hungary",
-    country == "IE" ~ "Ireland",
-    country == "IL" ~ "Israel",
-    country == "IS" ~ "Iceland",
-    country == "IT" ~ "Italy",
-    country == "LT" ~ "Lithuania",
-    country == "NL" ~ "Netherlands",
-    country == "NO" ~ "Norway",
-    country == "PL" ~ "Poland",
-    country == "PT" ~ "Portugal",
-    country == "RU" ~ "Russia",
-    country == "SE" ~ "Sweden",
-    country == "SI" ~ "Slovenia"
-  )) %>%
-  select(ClusMembership, region)
-
-##merge the data:
-map_with_2clusters <- eu_map %>%
-  left_join(ClusterRes.2clus, by = "region")
-
-cluster_colors <- c("1" = "#66C2A5",  # Soft Blue
-                    "2" = "#FC8D62")
-
-##lay out on the map:
-ggplot(map_with_2clusters, aes(long, lat, group = group, fill = factor(ClusMembership))) +
-  geom_polygon(color = "white") +
-  scale_fill_manual(values = cluster_colors)+
-  labs(
-    title = "",
-    fill = "Cluster"
-  ) +
-  theme_minimal()
-
-###----------------------------------------------------------------------------------------
-##optional for the SEM lab meeting July 4:
-sam_mediation_2clus_PM_MarkSup2<-'
-CCBelief~c(a2,a1,a1,a2,a1,a2,a1,a1,a1,a1,a2,a2,a1,a1,a1,a1,a1,a1,a2,a1,a2,a1,a2)*SelfTran+
-          c(b2,b1,b1,b2,b1,b2,b1,b1,b1,b1,b2,b2,b1,b1,b1,b1,b1,b1,b2,b1,b2,b1,b2)*Conser+
-          c(c2,c1,c1,c2,c1,c2,c1,c1,c1,c1,c2,c2,c1,c1,c1,c1,c1,c1,c2,c1,c2,c1,c2)*SelfEnhan
-
-CCPolicySupport~c(d2,d1,d1,d2,d1,d2,d1,d1,d1,d1,d2,d2,d1,d1,d1,d1,d1,d1,d2,d1,d2,d1,d2)*CCBelief+
-                c(e2,e1,e1,e2,e1,e2,e1,e1,e1,e1,e2,e2,e1,e1,e1,e1,e1,e1,e2,e1,e2,e1,e2)*SelfTran+
-                c(f2,f1,f1,f2,f1,f2,f1,f1,f1,f1,f2,f2,f1,f1,f1,f1,f1,f1,f2,f1,f2,f1,f2)*Conser+
-                c(g2,g1,g1,g2,g1,g2,g1,g1,g1,g1,g2,g2,g1,g1,g1,g1,g1,g1,g2,g1,g2,g1,g2)*SelfEnhan
-'
-
-Mediation.SAM.2clus.PM.MarkSup2<-cfa(model = sam_mediation_2clus_PM_MarkSup2,
-                                     sample.cov = Var_eta,
-                                     sample.nobs = lavInspect(fake, "nobs"))
-
-sink("C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/Conference/EAM 2025/outputs for SEM lab - July 4/Mediation_SAM_2clus_PM_MarkSup2.txt")
-summary(Mediation.SAM.2clus.PM.MarkSup2, fit.measures=T, standardized=T)
-sink()
-
-
-####---------------------------------------------------------------------------------------
-##country level indicators with GDP per capita
-
-##read the data in:
-GDPperCapita<-read.csv("GDP per Capita.csv", skip = 4)
+####------------------------------------------------------------------------------
+##Visualize the separation between sub-cluster 4.1 and sub-cluster 4.2
 #
-##select data from 2014, 2015, 2016, 2017:
-GDPperCapita<-GDPperCapita[,c("Country.Name","X2014","X2015","X2016","X2017")]
-#
-##filter the data for the countries we have:
-GDPperCapita<-GDPperCapita %>%
-  filter(Country.Name=="Austria" | Country.Name=="Belgium" | Country.Name=="Switzerland" | 
-           Country.Name=="Czechia" | Country.Name=="Germany" | Country.Name=="Estonia" | Country.Name=="Spain" | 
-           Country.Name=="Finland" | Country.Name=="France" | Country.Name=="United Kingdom" | Country.Name=="Hungary" | 
-           Country.Name=="Ireland" | Country.Name=="Israel" | Country.Name=="Iceland" | Country.Name=="Italy" | 
-           Country.Name=="Lithuania" | Country.Name=="Netherlands" | Country.Name=="Norway" | Country.Name=="Poland" | 
-           Country.Name=="Portugal" | Country.Name=="Russian Federation" | Country.Name=="Sweden" | Country.Name=="Slovenia" )
-
-
-##rename the data from the clustering data frame:
-ClusterRes.2clus<-ClusterRes.2clus %>%
-  mutate(Country.Name=case_when(
-    country=="AT" ~ "Austria",
-    country=="BE" ~ "Belgium",
-    country=="CH" ~ "Switzerland",
-    country=="CZ" ~ "Czechia",
-    country=="DE" ~ "Germany",
-    country=="EE" ~ "Estonia",
-    country=="ES" ~ "Spain",
-    country=="FI" ~ "Finland",
-    country=="FR" ~ "France",
-    country=="GB" ~ "United Kingdom",
-    country=="HU" ~ "Hungary",
-    country=="IE" ~ "Ireland",
-    country=="IL" ~ "Israel",
-    country=="IS" ~ "Iceland",
-    country=="IT" ~ "Italy",
-    country=="LT" ~ "Lithuania",
-    country=="NL" ~ "Netherlands",
-    country=="NO" ~ "Norway",
-    country=="PL" ~ "Poland",
-    country=="PT" ~ "Portugal",
-    country=="RU" ~ "Russian Federation",
-    country=="SE" ~ "Sweden",
-    country=="SI" ~ "Slovenia"
+##subset the Cluster 4 countries 
+#(sub-cluster 4.1 corresponds to cluster 1 in the current mediation result)
+#(sub-cluster 4.2 corresponds to cluster 6 in the current mediation result)
+ClusterRes.Cluster4Countries<-ClusterRes.Mediation.6clus %>%
+  filter((ClusMembership==1)|(ClusMembership==6)) %>%
+  mutate(ClusMembership=case_when(
+    ClusMembership == 1 ~ "4.1",
+    ClusMembership == 6 ~ "4.2"
   ))
 
-##merge the 2 data frame:
-GDPPerCapita_2clusters<-merge(ClusterRes.2clus, GDPperCapita,
-                              by.x = "Country.Name",
-                              by.y="Country.Name")
+#climate change belief to climate policy support
+Mediation.FreeSAMparam<-parameterEstimates(Mediation.lavaanFreeSAM.fit)
 
-##make a new column about the characteritics of the CCBelief translating into CCPolSupport
-cluster_colors <- c("1" = "#66C2A5",  # Soft Blue
-                    "2" = "#FC8D62")
+Mediation.CCBelief_regPar<-Mediation.FreeSAMparam %>%
+  filter(op=="~" & lhs=="CCPolicySupport" & rhs=="CCBelief") %>%
+  select(lhs, rhs, group, est, ci.lower, ci.upper)
 
-ggplot(GDPPerCapita_2clusters, aes(x=factor(ClusMembership), y=X2016, fill=factor(ClusMembership)))+
-  geom_boxplot()+
-  scale_fill_manual(values = cluster_colors)+
-  xlab("cluster")+ylab("GDP per Capita of 2016")+
-  labs(title = "GDP per Capita by Clusters", fill="cluster")+
+Cluster4Country.CCBelief_regPar<-merge(Mediation.CCBelief_regPar, ClusterRes.Cluster4Countries, 
+                                       by.x = "group", by.y = "group")
+
+Cluster4Country.CCBelief_regPar$country <- fct_reorder(Cluster4Country.CCBelief_regPar$country, 
+                                                       Cluster4Country.CCBelief_regPar$ClusMembership)
+
+cluster_colors <- c("4.1" = "#6E6E6E",
+                    "4.2" = "#E78AC3")
+
+ggplot(Cluster4Country.CCBelief_regPar, aes(x=est, y=country, color=factor(ClusMembership)))+
+  geom_point(size=3) +
+  geom_errorbarh(aes(xmin = ci.lower, xmax = ci.upper), height=0.2)+
+  #geom_vline(xintercept = 0.435, color="red", linetype="dashed")+
+  scale_color_manual(values = cluster_colors)+
+  labs(title = "Effect of Climate Change Belief on Climate Policy Support for Cluster-4 Countries",
+       color="sub-cluster")+
+  xlab("regression coefficients")+ylab("country")+
   theme_bw()
 
+#
+#
+#3D plot: direct effect of HV on climate policy support
+Mediation.FreeSAMparam<-parameterEstimates(Mediation.lavaanFreeSAM.fit)
 
+HVDirect.param.Mediation<-Mediation.FreeSAMparam %>%
+  filter(op=="~" & lhs=="CCPolicySupport" & rhs!="CCBelief") %>%
+  select(lhs, rhs, group, est, ci.lower, ci.upper)
 
-###-----------------------------------------------------------------------------
-##MMG-SEM 6 clusters:
-##specify structural model
-Str_model<-'
-CCBelief~SelfTran+Conser+SelfEnhan
+HVDirect.param.Mediation.wide<-HVDirect.param.Mediation %>%
+  select(rhs, group, est) %>%
+  pivot_wider(names_from = rhs, values_from = est)
 
-CCPolicySupport~CCBelief+SelfTran+Conser+SelfEnhan
-'
+HVDirect.param.wide.Cluster4Countries<-merge(HVDirect.param.Mediation.wide, ClusterRes.Cluster4Countries, 
+                                             by.x = "group", by.y = "group")
 
-##6 clusters:
-Mediation.6clus.PM.MarkSup2<-MMGSEM(dat=ESS8,
-                                    S1 = list(NoOpen.HV.Metric.M2.Marker, CCBelief.Metric.M1.Marker,CCPolSupport.PMetric.M1.MarkerSup2),
-                                    S2 = Str_model,
-                                    group = "country",
-                                    nclus=6,
-                                    seed = 100,
-                                    userStart = NULL,
-                                    s1_fit = list(NoOpen.HV.Metric.Fit2.Marker, CCBelief.Metric.Fit1.Marker,CCPolSupport.PMetric.Fit1.MarkerSup2),
-                                    max_it = 10000L,
-                                    nstarts = 50L,
-                                    printing = F,
-                                    partition = "hard",
-                                    endogenous_cov = TRUE,
-                                    endo_group_specific = TRUE,
-                                    sam_method = "local",
-                                    meanstr = FALSE,
-                                    rescaling = F,
-                                    missing="FIML")
+cluster_colors <- c("4.1" = "#6E6E6E",
+                    "4.2" = "#E78AC3")
 
-##check the posterior membership probabilities:
-round(Mediation.6clus.PM.MarkSup2$posteriors[,1:6], digits = 5)
+Mediation_Cluster4Countries_direct_3D<-plot_ly(HVDirect.param.wide.Cluster4Countries, x= ~SelfTran, y= ~Conser, z= ~SelfEnhan, text= ~country, color = ~factor(ClusMembership),
+                                               colors = cluster_colors,
+                                               type = "scatter3d", mode="markers+text") %>%
+  layout(title="SAM Mediation Model - Cluster-4 Countries - direct effect of human values",
+         scene=list(xaxis=list(title="Self-Transcendence"),
+                    yaxis=list(title="Conservation"),
+                    zaxis=list(title="Self-Enhancement")))
 
-##check the regression coefficients of each cluster:
-Mediation.6clus.PM.MarkSup2$param$beta_ks
+htmlwidgets::saveWidget(as_widget(Mediation_Cluster4Countries_direct_3D), 
+                        file = "C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/Mediation_Cluster4Countries_directHV_3D.html")
+
+#
+###3D plot for indirect effects of human values on climate policy support via climate change belief:
+Mediation.FreeSAMparam<-parameterEstimates(Mediation.lavaanFreeSAM.fit)
+
+HVIndirect.par.Mediation<-Mediation.FreeSAMparam %>%
+  filter(op==":=")
+
+HVIndirect.par.Mediation$group <- as.numeric(gsub(".*_g(\\d+).*", "\\1", HVIndirect.par.Mediation$lhs))
+
+HVIndirect.par.Mediation<-HVIndirect.par.Mediation %>%
+  select(lhs, group, est, ci.lower, ci.upper)
+
+HVIndirect.par.Mediation$human_values <- gsub("_g.*", "", HVIndirect.par.Mediation$lhs)
+
+HVIndirect.par.wide.Mediation<-HVIndirect.par.Mediation %>%
+  select(human_values, group, est) %>%
+  pivot_wider(names_from = human_values, values_from = est)
+
+HVIndirect.par.wide.Cluster4Countries<-merge(HVIndirect.par.wide.Mediation, ClusterRes.Cluster4Countries, 
+                                             by.x = "group", by.y = "group")
+
+cluster_colors <- c("4.1" = "#6E6E6E",
+                    "4.2" = "#E78AC3")
+
+Mediation_Cluster4Countries_indirect_3D<-plot_ly(HVIndirect.par.wide.Cluster4Countries, x= ~STindirect, y= ~ConIndirect, z= ~SEindirect, text= ~country, color = ~factor(ClusMembership),
+                                                 colors = cluster_colors,
+                                                 type = "scatter3d", mode="markers+text") %>%
+  layout(title="SAM Mediation Model - Cluster-4 Countries - indirect effect of human values via climate change belief",
+         scene=list(xaxis=list(title="Self-Transcendence"),
+                    yaxis=list(title="Conservation"),
+                    zaxis=list(title="Self-Enhancement")))
+
+htmlwidgets::saveWidget(as_widget(Mediation_Cluster4Countries_indirect_3D), 
+                        file = "C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/Mediation_Cluster4Countries_indirectHV_3D.html")
