@@ -15,6 +15,7 @@ library(mmgsem)
 #gitcreds_set()
 #devtools::install_github("AndresFPA/mmgsem", force = T)
 
+
 ###################################################################################
 ####################### Data Management ###########################################
 ###################################################################################
@@ -119,4 +120,5 @@ ESS8<-ESS8 %>%
 ##Income insecurity:
 ESS8$IncomeInsecure<-ifelse(ESS8$hincfel %in% c(7,8,9),NA, ESS8$hincfel)
 
-
+#write.csv(ESS8, file = "./ESS8_clean.csv",row.names = F)
+##The clean data is availble on GitHub
