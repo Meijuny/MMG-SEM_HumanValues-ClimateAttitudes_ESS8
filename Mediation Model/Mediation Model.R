@@ -147,36 +147,20 @@ Mediation.6clus.PM.MarkSup2$posteriors
 Mediation.6clus.PM.MarkSup2$param$beta_ks
 
 ##hypothesis testing to see if effects differ from 0:
+##for d=0.00001: 6.710037 hours --> no NaNs produced
 StartTime<-Sys.time()
 se.Mediation.6clus<-se(object = Mediation.6clus.PM.MarkSup2,
-                        d = 0.0001)
+                        d = 0.00001)
 EndTime<-Sys.time()
 StartTime-EndTime
 
-##naive 16 mins: too many NaNs
-##for d=0.00001: 6.710037 hours --> no NaNs produced
-save(se.Mediation.6clus,
-     file = "C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/se.Mediation.d0.00001.RData")
-sink("C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/summary_se_Mediation_d0.00001.txt")
+##check the results in a nice output
 summary(model=Mediation.6clus.PM.MarkSup2,se=se.Mediation.6clus)
-sink()
-sink("C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/BG_Mediation_d0.00001.txt")
-test.mmgsem(model = Mediation.6clus.PM.MarkSup2,
-            se = se.Mediation.6clus,
-            multiple_comparison = T)
-sink()
 
-##for d=0.0001: 7.59 hours --> no NaNs produced
-save(se.Mediation.6clus,
-     file = "C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/se.Mediation.d0.0001.RData")
-sink("C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/summary_se_Mediation_d0.0001.txt")
-summary(model=Mediation.6clus.PM.MarkSup2,se=se.Mediation.6clus)
-sink()
-sink("C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/BG_Mediation_d0.0001.txt")
+##hypothesis testing to see if the parameters differ between groups
 test.mmgsem(model = Mediation.6clus.PM.MarkSup2,
             se = se.Mediation.6clus,
             multiple_comparison = T)
-sink()
 
 ##Cluster Membership in a concise df to make validation plot in the next step:
 clustering.Mediation.6clus<-Mediation.6clus.PM.MarkSup2$posteriors
