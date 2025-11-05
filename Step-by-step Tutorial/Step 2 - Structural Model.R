@@ -77,6 +77,7 @@ BasicModel.PMetricCCPolSup.marker2.Selection<-ModelSelection(dat=ESS8,
                                                              missing="FIML",
                                                              s1_type="lavaan")
 
+
 View(BasicModel.PMetricCCPolSup.marker2.Selection$Overview)
 
 #set the canvas to have CHull plot on the left and BIC_G plot on the right
@@ -143,36 +144,29 @@ CCPolicySupport.4clus.50S.MarkSup2.PM$posteriors
 CCPolicySupport.4clus.50S.MarkSup2.PM$param$beta_ks
 
 ##hypothesis testing to see if effect is significant from 0
-StartTime<-Sys.time()
-se.4clus<-compute_se(CCPolicySupport.4clus.50S.MarkSup2.PM,
-                     d = 0.005,
-                     naive = F)
-EndTime<-Sys.time()
-StartTime-EndTime
+#StartTime<-Sys.time()
+#se.4clus<-compute_se(CCPolicySupport.4clus.50S.MarkSup2.PM,
+#                     d = 0.005,
+#                     naive = F)
+#EndTime<-Sys.time()
+#StartTime-EndTime
 
-##for d=0.001 with correction: computation time 2.37 hours
-summary(model=CCPolicySupport.4clus.50S.MarkSup2.PM,se=se.4clus)
-##se for cluster 1 SelfEnhan cannot be computed
-##se for cluster 4 all three HV cannot be computed
 
-##for d=0.01 with correction: after 2 hours, throw and error
-
-##for d=0.0001 with correction: computation time 3.32 hours
-summary(model=CCPolicySupport.4clus.50S.MarkSup2.PM,se=se.4clus)
-##se for cluster 1 all three HV cannot be computed
-##se for cluster 3 SelfTran and SelfHan cannot be computed
-##se for cluster 4 SelfTran and SelfHan cannot be computed
-
-##Return to the previous function:
+##the compute_se() function is undergoing changes and development
+##Return to the previous function se(), which can be downloaded from https://github.com/AndresFPA/mmgsem/blob/main/R/SE.R:
 StartTime<-Sys.time()
 se.BasicModel.4clus<-se(object = CCPolicySupport.4clus.50S.MarkSup2.PM,
                         d = 0.00001)
 EndTime<-Sys.time()
 StartTime-EndTime
 
-##the SE object has been saved since the last run, now we can directly load it:
-load("C:/Users/U0172378/OneDrive - KU Leuven/Desktop/Meijun - PhD/R/MMGSEM_ESS_HumanValues-AntiImmigrant/Sink Output/se.BasicModel.4clus.RData")
+##check the MMG-SEM results in a nice output
+summary(model=CCPolicySupport.4clus.50S.MarkSup2.PM,se=se.BasicModel.4clus)
 
+##se for cluster 1 SelfEnhan cannot be computed
+##se for cluster 4 all three HV cannot be computed
+
+##for d=0.01 with correction: after 2 hours, throw and error
 summary(model=CCPolicySupport.4clus.50S.MarkSup2.PM,se=se.BasicModel.4clus)
 
 
